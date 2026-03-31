@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://your-market.example/schemas/invocation-record.schema.json",
+  "title": "InvocationRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_id",
+    "caller_id",
+    "listing_id",
+    "provider_session_id",
+    "status",
+    "started_at"
+  ],
+  "properties": {
+    "request_id": { "type": "string", "minLength": 1 },
+    "caller_id": { "type": "string", "minLength": 1 },
+    "listing_id": { "type": "string", "minLength": 1 },
+    "provider_session_id": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["running", "succeeded", "failed", "cancelled", "timeout"] },
+    "latency_ms": { "type": "number", "minimum": 0 },
+    "token_usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_tokens": { "type": "integer", "minimum": 0 },
+        "output_tokens": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "cost": { "type": "number", "minimum": 0 },
+    "error_code": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": "string", "format": "date-time" }
+  }
+}

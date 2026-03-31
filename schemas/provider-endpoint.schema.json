@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://your-market.example/schemas/provider-endpoint.schema.json",
+  "title": "ProviderEndpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "publisher_id",
+    "listing_id",
+    "session_id",
+    "status",
+    "max_concurrency",
+    "current_concurrency",
+    "updated_at"
+  ],
+  "properties": {
+    "publisher_id": { "type": "string", "minLength": 1 },
+    "listing_id": { "type": "string", "minLength": 1 },
+    "session_id": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["online", "offline", "draining", "unhealthy"] },
+    "max_concurrency": { "type": "integer", "minimum": 1 },
+    "current_concurrency": { "type": "integer", "minimum": 0 },
+    "region_hint": { "type": "string" },
+    "latency_ms": { "type": "number", "minimum": 0 },
+    "success_rate_1m": { "type": "number", "minimum": 0, "maximum": 1 },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}

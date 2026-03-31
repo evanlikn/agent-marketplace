@@ -1,0 +1,307 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://your-market.example/schemas/agent-manifest.schema.json",
+  "title": "OpenClaw AgentManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "agent_id",
+    "display_name",
+    "description",
+    "version",
+    "skills",
+    "capabilities",
+    "runtime_requirements"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.\\d+\\.\\d+$"
+    },
+    "agent_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9._-]{3,128}$"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:[-+][0-9A-Za-z.-]+)?$"
+    },
+    "publisher": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["publisher_id"],
+      "properties": {
+        "publisher_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "organization": { "type": "string", "maxLength": 200 },
+        "website": { "type": "string", "format": "uri" }
+      }
+    },
+    "skills": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/skill" }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supports_streaming", "supports_network"],
+      "properties": {
+        "supports_streaming": { "type": "boolean" },
+        "supports_network": { "type": "boolean" },
+        "supports_push_notifications": { "type": "boolean", "default": false },
+        "model_families": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 100 },
+          "default": []
+        },
+        "tool_types": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 100 },
+          "default": []
+        },
+        "extensions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/extension" },
+          "default": []
+        }
+      }
+    },
+    "prompt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "system_prompt_hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "template_variables": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 100 },
+          "default": []
+        }
+      }
+    },
+    "knowledge_decl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sources"],
+      "properties": {
+        "sources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/knowledgeSource" },
+          "default": []
+        },
+        "last_updated_at": { "type": "string", "format": "date-time" },
+        "contains_personal_data": { "type": "boolean", "default": false }
+      }
+    },
+    "runtime_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min_memory_mb", "max_concurrency"],
+      "properties": {
+        "cpu_cores": { "type": "number", "minimum": 0.1 },
+        "gpu": { "type": "boolean", "default": false },
+        "min_memory_mb": { "type": "integer", "minimum": 128 },
+        "max_context_tokens": { "type": "integer", "minimum": 256 },
+        "max_concurrency": { "type": "integer", "minimum": 1, "maximum": 1000 }
+      }
+    },
+    "io_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_schema": { "type": "object" },
+        "output_schema": { "type": "object" }
+      }
+    },
+    "routing_hints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "region_hint": { "type": "string", "maxLength": 50 },
+        "latency_sla_ms": { "type": "integer", "minimum": 1 },
+        "timeout_ms": { "type": "integer", "minimum": 1000 }
+      }
+    },
+    "visibility": {
+      "type": "string",
+      "enum": ["private", "unlisted", "public"],
+      "default": "private"
+    },
+    "pricing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "billing_mode": { "type": "string", "enum": ["per_request", "per_token", "per_second"] },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "default": "USD" },
+        "unit_price": { "type": "number", "minimum": 0 }
+      }
+    },
+    "remote_agent_id": {
+      "type": "string",
+      "pattern": "^[^/]+/[^/]+$"
+    },
+    "remote_auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "enum": ["login_token", "api_key"] },
+        "api_key_env": { "type": "string", "maxLength": 120 }
+      }
+    },
+    "a2a": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "default_input_modes", "default_output_modes"],
+      "properties": {
+        "protocol_version": { "type": "string" },
+        "documentation_url": { "type": "string", "format": "uri" },
+        "icon_url": { "type": "string", "format": "uri" },
+        "default_input_modes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "default_output_modes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "supported_interfaces": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/agentInterface" }
+        },
+        "security_schemes": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/securityScheme" },
+          "default": {}
+        },
+        "security_requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "default": []
+        }
+      }
+    }
+  },
+  "$defs": {
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "description", "tags"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-zA-Z0-9._-]{1,128}$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "description": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 50 },
+          "maxItems": 50
+        },
+        "examples": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 500 },
+          "default": []
+        },
+        "input_modes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "output_modes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "knowledgeSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "summary"],
+      "properties": {
+        "type": { "type": "string", "enum": ["local_files", "db", "vector_store", "api", "other"] },
+        "summary": { "type": "string", "maxLength": 500 },
+        "refresh_policy": { "type": "string", "maxLength": 200 }
+      }
+    },
+    "extension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uri"],
+      "properties": {
+        "uri": { "type": "string", "format": "uri" },
+        "description": { "type": "string", "maxLength": 500 },
+        "required": { "type": "boolean", "default": false },
+        "params": { "type": "object" }
+      }
+    },
+    "agentInterface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "protocol_binding", "protocol_version"],
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "protocol_binding": { "type": "string", "enum": ["JSONRPC", "GRPC", "HTTP+JSON"] },
+        "tenant": { "type": "string", "maxLength": 100 },
+        "protocol_version": { "type": "string" }
+      }
+    },
+    "securityScheme": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apiKeySecurityScheme": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["location", "name"],
+          "properties": {
+            "description": { "type": "string" },
+            "location": { "type": "string", "enum": ["query", "header", "cookie"] },
+            "name": { "type": "string" }
+          }
+        },
+        "httpAuthSecurityScheme": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scheme"],
+          "properties": {
+            "description": { "type": "string" },
+            "scheme": { "type": "string", "enum": ["basic", "bearer"] },
+            "bearerFormat": { "type": "string" }
+          }
+        },
+        "oauth2SecurityScheme": { "type": "object" },
+        "openIdConnectSecurityScheme": { "type": "object" },
+        "mtlsSecurityScheme": { "type": "object" }
+      },
+      "oneOf": [
+        { "required": ["apiKeySecurityScheme"] },
+        { "required": ["httpAuthSecurityScheme"] },
+        { "required": ["oauth2SecurityScheme"] },
+        { "required": ["openIdConnectSecurityScheme"] },
+        { "required": ["mtlsSecurityScheme"] }
+      ]
+    }
+  }
+}

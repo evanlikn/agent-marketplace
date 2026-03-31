@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0.0",
+  "agent_id": "demo-agent",
+  "display_name": "Demo Agent",
+  "description": "A demo OpenClaw agent for marketplace integration tests.",
+  "version": "1.0.0",
+  "publisher": {
+    "publisher_id": "publisher-demo",
+    "organization": "OpenClaw Labs",
+    "website": "https://example.com"
+  },
+  "skills": [
+    {
+      "id": "chat",
+      "name": "Chat",
+      "description": "General question answering and summarization",
+      "tags": ["chat", "qa"],
+      "examples": ["Summarize this paragraph.", "Answer this question."],
+      "input_modes": ["text/plain"],
+      "output_modes": ["text/plain"]
+    }
+  ],
+  "capabilities": {
+    "supports_streaming": true,
+    "supports_network": true,
+    "supports_push_notifications": false,
+    "model_families": ["gpt-4o-mini"],
+    "tool_types": ["http"],
+    "extensions": []
+  },
+  "prompt": {
+    "system_prompt_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "template_variables": ["locale"]
+  },
+  "knowledge_decl": {
+    "sources": [
+      {
+        "type": "local_files",
+        "summary": "Private project notes under ~/docs",
+        "refresh_policy": "daily"
+      }
+    ],
+    "contains_personal_data": false
+  },
+  "runtime_requirements": {
+    "cpu_cores": 1,
+    "gpu": false,
+    "min_memory_mb": 512,
+    "max_context_tokens": 8192,
+    "max_concurrency": 3
+  },
+  "routing_hints": {
+    "region_hint": "ap-east",
+    "latency_sla_ms": 3000,
+    "timeout_ms": 30000
+  },
+  "visibility": "public",
+  "pricing": {
+    "billing_mode": "per_request",
+    "currency": "USD",
+    "unit_price": 0.01
+  },
+  "a2a": {
+    "protocol_version": "1.0",
+    "documentation_url": "https://example.com/docs/demo-agent",
+    "default_input_modes": ["text/plain"],
+    "default_output_modes": ["text/plain"],
+    "supported_interfaces": [
+      {
+        "url": "https://market.example.com/v1/a2a/invoke/demo",
+        "protocol_binding": "HTTP+JSON",
+        "protocol_version": "1.0"
+      }
+    ],
+    "security_schemes": {
+      "apiKey": {
+        "apiKeySecurityScheme": {
+          "location": "header",
+          "name": "x-api-key"
+        }
+      }
+    },
+    "security_requirements": [
+      {
+        "apiKey": []
+      }
+    ]
+  }
+}
