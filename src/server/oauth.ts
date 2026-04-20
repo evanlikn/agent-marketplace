@@ -72,11 +72,12 @@ export async function createDeviceCode(input: {
   `,
     [deviceCode, userCode, input.client_id, input.scope]
   );
+  const base = config.deviceVerificationUriBase.replace(/\/$/, "");
   return {
     device_code: deviceCode,
     user_code: userCode,
-    verification_uri: `${config.gatewayBaseUrl}/oauth/device/verify`,
-    verification_uri_complete: `${config.gatewayBaseUrl}/oauth/device/verify?user_code=${userCode}`,
+    verification_uri: `${base}/device`,
+    verification_uri_complete: `${base}/device?user_code=${userCode}`,
     expires_in: expiresIn,
     interval: 5
   };

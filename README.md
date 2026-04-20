@@ -64,11 +64,33 @@ npm run start:server:prod
 
 - `POST /oauth/token`
 - `POST /oauth/device/code`
-- `POST /oauth/device/approve`
+- `POST /v1/oauth/device/approve` (Bearer-authenticated; used by the web `/device` page)
+- `POST /oauth/device/approve` (dev helper, no auth)
 - `POST /v1/auth/register`
 - `POST /v1/auth/login`
 - `GET /v1/auth/me`
 - `POST /v1/auth/api-key/create`
+
+## Device Login Flow (Updated)
+
+The OAuth device flow is fully driven by the marketplace web — the server only exposes APIs and does not render any HTML.
+
+1. CLI starts the device flow via `POST /oauth/device/code`. The response's `verification_uri` / `verification_uri_complete` points to the web app, for example `http://localhost:3000/device?user_code=XXXX`.
+2. User opens the URL in a browser. The web page `/device` reads `user_code` from the query string.
+3. If the user is not logged in on the web, the page links them to `/login?next=/device?user_code=XXXX` (and `/register?next=...`). Web login uses the standard platform user **email + password** flow (`POST /v1/auth/login`).
+4. Once logged in, the user returns to `/device` and clicks "Approve login". The web sends `POST /v1/oauth/device/approve` with `Authorization: Bearer <access_token>` and `{ user_code }`.
+5. Server verifies the bearer token via `requireCallerAuth` and uses the caller's own identity (`publisher_id` = `caller_id`, reflecting the unified user model) as the device code subject. No subject is accepted from client input.
+6. CLI polling `POST /oauth/token` with `grant_type=urn:ietf:params:oauth:grant-type:device_code` completes and receives access/refresh tokens.
+
+Notes:
+
+- The server no longer hosts a login/consent HTML page — all UI is on the marketplace web.
+- `POST /oauth/device/approve` (unauthenticated) is kept as a dev helper/automation escape hatch; production deployments should disable or restrict it.
+
+Relevant config:
+
+- `DEVICE_VERIFICATION_URI_BASE` (defaults to `WEB_BASE_URL`, then `CORS_ALLOW_ORIGIN`, then `http://localhost:3000`): base URL used to build the `verification_uri` returned by `/oauth/device/code`.
+- `WEB_BASE_URL` / `CORS_ALLOW_ORIGIN`: the marketplace web origin. The server also uses this for CORS allow-origin.
 
 ## Billing and metrics
 

@@ -51,6 +51,7 @@ app.use((req, res, next) => {
   }
   next();
 });
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/healthz", (_req, res) => {
@@ -128,6 +129,26 @@ app.post("/oauth/device/code", async (req, res) => {
   res.json(data);
 });
 
+app.post("/v1/oauth/device/approve", requireCallerAuth, async (req, res) => {
+  const ctx = req.callerContext;
+  const subject = ctx?.publisherId ?? ctx?.callerId;
+  if (!subject) {
+    res.status(403).json({ error: "NO_PUBLISHER_IDENTITY" });
+    return;
+  }
+  const userCode = String(req.body.user_code ?? "").trim();
+  if (!userCode) {
+    res.status(400).json({ error: "INVALID_USER_CODE" });
+    return;
+  }
+  const ok = await approveDeviceCode(userCode, subject);
+  if (!ok) {
+    res.status(400).json({ error: "invalid_user_code" });
+    return;
+  }
+  res.json({ ok: true, subject });
+});
+
 app.post("/oauth/device/approve", async (req, res) => {
   const ok = await approveDeviceCode(String(req.body.user_code ?? ""), String(req.body.subject ?? "publisher-demo"));
   if (!ok) {
@@ -158,8 +179,9 @@ app.post("/v1/auth/register", async (req, res) => {
     const apiKey = await createApiKeyForCaller({ caller_id: user.user.caller_id });
     const accessToken = signAccessToken({
       sub: user.user.user_id,
-      role: "caller",
+      role: "publisher",
       caller_id: user.user.caller_id,
+      publisher_id: user.user.caller_id,
       client_id: user.user.oauth_client_id,
       scope: "invoke"
     });
@@ -201,8 +223,9 @@ app.post("/v1/auth/login", async (req, res) => {
     const apiKey = await createApiKeyForCaller({ caller_id: user.caller_id });
     const accessToken = signAccessToken({
       sub: user.user_id,
-      role: "caller",
+      role: "publisher",
       caller_id: user.caller_id,
+      publisher_id: user.caller_id,
       client_id: user.oauth_client_id,
       scope: "invoke"
     });

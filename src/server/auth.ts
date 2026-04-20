@@ -40,8 +40,12 @@ export function requireCallerAuth(req: Request, res: Response, next: NextFunctio
   const token = authHeader.slice("Bearer ".length);
   try {
     const claims = verifyAccessToken(token);
-    if (claims.role !== "caller" && claims.role !== "admin") {
+    if (claims.role !== "caller" && claims.role !== "publisher" && claims.role !== "admin") {
       res.status(403).json({ error: "FORBIDDEN", message: "Caller role required" });
+      return;
+    }
+    if (!claims.caller_id) {
+      res.status(403).json({ error: "FORBIDDEN", message: "Caller identity missing in token" });
       return;
     }
     req.callerContext = {

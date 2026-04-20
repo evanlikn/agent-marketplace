@@ -4,6 +4,12 @@ export const config = {
   port: Number(process.env.PORT ?? "8080"),
   gatewayBaseUrl: process.env.GATEWAY_BASE_URL ?? "http://localhost:8080",
   corsAllowOrigin: process.env.CORS_ALLOW_ORIGIN ?? "http://localhost:3000",
+  webBaseUrl: process.env.WEB_BASE_URL ?? process.env.CORS_ALLOW_ORIGIN ?? "http://localhost:3000",
+  deviceVerificationUriBase:
+    process.env.DEVICE_VERIFICATION_URI_BASE ??
+    process.env.WEB_BASE_URL ??
+    process.env.CORS_ALLOW_ORIGIN ??
+    "http://localhost:3000",
   pgUrl: process.env.POSTGRES_URL ?? "postgres://postgres:postgres@localhost:5432/openclaw",
   redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
   jwtIssuer: process.env.JWT_ISSUER ?? "openclaw-market",
